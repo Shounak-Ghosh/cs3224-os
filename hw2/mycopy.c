@@ -15,7 +15,6 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    // Hardcoded user name
     const char *user_name = "Shounak Ghosh";
     
     // Get user ID
@@ -29,7 +28,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Open the output file for writing (create if it doesn't exist, clear if it does)
-    int output_fd = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR);
+    int output_fd = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC);
     if (output_fd < 0) {
         perror("Error opening/creating output file");
         close(input_fd);
@@ -38,7 +37,7 @@ int main(int argc, char *argv[]) {
 
     // Write user information to the output file
     char user_info[100];
-    sprintf(user_info, "%s\n%d\n", user_name, user_id);
+    sprintf(user_info, "%s %d\n", user_name, user_id);
     if (write(output_fd, user_info, strlen(user_info)) != strlen(user_info)) {
         perror("Error writing user information to output file");
         close(input_fd);
