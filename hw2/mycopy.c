@@ -68,5 +68,5 @@ int main(int argc, char *argv[]) {
     close(input_fd);
     close(output_fd);
 
-    return 0;
+    exit(EXIT_SUCCESS);
 }
