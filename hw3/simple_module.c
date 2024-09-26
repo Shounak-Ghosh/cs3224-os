@@ -2,7 +2,6 @@
 #include <linux/module.h>
 #include <linux/jiffies.h>
 #include <linux/ktime.h>
-#include <linux/timekeeping.h>
 #include <linux/kernel.h>
 
 MODULE_LICENSE("Dual BSD/GPL");
@@ -36,7 +35,7 @@ static void __exit simple_module_exit(void)
     printk(KERN_INFO "Time elapsed using jiffies: %lu ms\n", (elapsed_jiffies * 1000) / HZ);
 
     // Calculate elapsed time using ktime
-    s64 elapsed_time_ns = ktime_to_ns(ktime_sub(end_time, start_time));
+    u64 elapsed_time_ns = ktime_to_ns(end_time - start_time);
     // Corrected format specifier for s64 which is long long int
     printk(KERN_INFO "Time elapsed using ktime: %lld ms\n", elapsed_time_ns / 1000000);
 }

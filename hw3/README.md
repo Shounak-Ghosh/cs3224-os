@@ -8,6 +8,7 @@ Install required packages with the following:
 
 ```bash
 sudo apt install linux-generic
+sudo apt-get install gcc-12
 sudo apt install make
 ```
 
