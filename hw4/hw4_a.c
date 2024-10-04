@@ -4,30 +4,23 @@
 
 int main() {
     pid_t x = -11, y = -22, z = -33;
+
+    printf("Initial before x fork: x = %d, y = %d, z = %d, pid = %d, ppid = %d\n", x, y, z, getpid(), getppid());
     
     x = fork();
+
+    printf("Initial after x fork: x = %d, y = %d, z = %d, pid = %d, ppid = %d\n", x, y, z, getpid(), getppid());
     
     if (x == 0) {
-        // Inside child process after the first fork
-        printf("Process 2: x = %d, pid = %d, ppid = %d\n", x, getpid(), getppid());
+        printf("Inside process x before y fork: x = %d, y = %d, z = %d, pid = %d, ppid = %d\n", x, y, z, getpid(), getppid());
         y = fork();
-        
-        if (y == 0) {
-            // Inside child process of y fork
-            printf("Process 3: x = %d, y = %d, pid = %d, ppid = %d\n", x, y, getpid(), getppid());
-        } else if (y > 0) {
-            z = fork();
-            if (z == 0) {
-                // Inside child process of z fork
-                printf("Process 4: x = %d, y = %d, z = %d, pid = %d, ppid = %d\n", x, y, z, getpid(), getppid());
-            } else {
-                // Parent process after y and z forks
-                printf("Process 2 (again): x = %d, y = %d, z = %d, pid = %d, ppid = %d\n", x, y, z, getpid(), getppid());
-            }
-        }
-    } else if (x > 0) {
-        // Inside the original parent process
-        printf("Process 1: x = %d, pid = %d, ppid = %d\n", x, getpid(), getppid());
+        printf("Inside process x after y fork: x = %d, y = %d, z = %d, pid = %d, ppid = %d\n", x, y, z, getpid(), getppid());
+    }
+    printf("outside process x: x = %d, y = %d, z = %d, pid = %d, ppid = %d\n", x, y, z, getpid(), getppid());
+    if (y > 0) {
+        printf("outside process y before z fork: x = %d, y = %d, z = %d, pid = %d, ppid = %d\n", x, y, z, getpid(), getppid());
+        z = fork();
+        printf("outside process y after z fork: x = %d, y = %d, z = %d, pid = %d, ppid = %d\n", x, y, z, getpid(), getppid());
     }
     
     return 0;
