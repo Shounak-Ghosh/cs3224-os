@@ -24,11 +24,13 @@ int main(int argc, char* argv[]) {
     }
 
     int pipe_fd[2]; // Pipe file descriptors
+    // create the pipe
     if (pipe(pipe_fd) == -1) {
         perror("pipe failed");
         exit(EXIT_FAILURE);
     }
 
+    // fork a child process
     pid_t pid = fork();
     if (pid < 0) {
         perror("fork failed");
@@ -43,6 +45,7 @@ int main(int argc, char* argv[]) {
         // Close the read end of the pipe in the child process
         close(pipe_fd[PIPE_READ_END]);
 
+        // when forking, memory is copied, so n is a local copy from the parent process
         for (int i = 0; i < n; i++) {
             // Simulate random delay
             int delay = rand() % 3;
@@ -56,9 +59,6 @@ int main(int argc, char* argv[]) {
             long long temp = a;
             a = b;
             b = temp + b;
-
-            printf("[Child] Produced: %lld (delay %d seconds)\n", next_fib, delay);
-            fflush(stdout); // Ensure output is flushed immediately
         }
 
         // Close the write end of the pipe after sending all numbers
@@ -73,9 +73,10 @@ int main(int argc, char* argv[]) {
             // Read the Fibonacci number from the pipe
             read(pipe_fd[PIPE_READ_END], &num, sizeof(num));
 
-            printf("[Parent] Consumed: %lld\n", num);
+            printf("%lld ", num);
             fflush(stdout); // Ensure output is flushed immediately
         }
+        printf("\n");
 
         // Close the read end of the pipe after consuming all numbers
         close(pipe_fd[PIPE_READ_END]);

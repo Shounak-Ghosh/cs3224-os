@@ -17,7 +17,6 @@ typedef struct {
     int in;                    // Index for producer (child process)
     int out;                   // Index for consumer (parent process)
     int count;                 // Count of elements in the buffer
-    int n;                     // Length of the Fibonacci sequence
 } shared_mem_t;
 
 int main(int argc, char* argv[]) {
@@ -56,7 +55,6 @@ int main(int argc, char* argv[]) {
     shared_mem->in = 0;
     shared_mem->out = 0;
     shared_mem->count = 0;
-    shared_mem->n = n; // Store n in shared memory
 
     pid_t pid = fork();
     if (pid < 0) {
@@ -69,6 +67,7 @@ int main(int argc, char* argv[]) {
         long long a = 0; // First Fibonacci number
         long long b = 1; // Second Fibonacci number
 
+        // when forking, memory is copied, so n is a local copy from the parent process
         for (int i = 0; i < n; i++) {
             // Simulate random delay
             int delay = rand() % 3;
@@ -89,9 +88,6 @@ int main(int argc, char* argv[]) {
             long long temp = a;
             a = b;
             b = temp + b;
-
-            printf("[Child] Produced: %lld (delay %d seconds)\n", next_fib, delay);
-            fflush(stdout); // Ensure output is flushed immediately
         }
 
         // Detach from shared memory
@@ -112,9 +108,10 @@ int main(int argc, char* argv[]) {
             shared_mem->out = (shared_mem->out + 1) % BUF_SZ;
             shared_mem->count--;
 
-            printf("[Parent] Consumed: %lld\n", num);
+            printf("%lld ", num);
             fflush(stdout); // Ensure output is flushed immediately
         }
+        printf("\n");
 
         // Wait for the child process to finish
         wait(NULL);
