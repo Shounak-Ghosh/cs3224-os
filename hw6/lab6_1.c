@@ -7,78 +7,13 @@
 #include <arpa/inet.h>
 #include <time.h>
 #include <string.h>
-#include <sys/wait.h>  
+#include <sys/wait.h>
 
-#define PORT 8080  // Define the port number for the server
-#define MAX_ATTEMPTS 100  // Maximum number of connection attempts
-#define BUF_SIZE 256  // Buffer size for socket communication
+#define PORT 8080        // Define the port number for the server
+#define MAX_ATTEMPTS 100 // Maximum number of connection attempts
+#define BUF_SIZE 256     // Buffer size for socket communication
 
-// Function to generate Fibonacci sequence and send to the client
-void generate_fibonacci(int server_fd) {
-    struct sockaddr_in client_addr;
-    socklen_t client_len = sizeof(client_addr);
-    int client_fd;
-    int n;
-    long long a = 0, b = 1, next;
-
-    // Random wait before starting the server (1 to 3 seconds)
-    int delay = (rand() % 3) + 1;
-    sleep(delay);
-
-    // Start listening for connections
-    listen(server_fd, 1);
-
-    // Accept connection from the client
-    client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &client_len);
-    if (client_fd < 0) {
-        perror("accept");
-        exit(EXIT_FAILURE);
-    }
-
-    // Read the value of n sent by the parent
-    read(client_fd, &n, sizeof(n));
-
-    // Generate Fibonacci sequence and send it to the parent
-    for (int i = 0; i < n; ++i) {
-        if (i == 0)
-            next = a;
-        else if (i == 1)
-            next = b;
-        else {
-            next = a + b;
-            a = b;
-            b = next;
-        }
-
-        // Random delay (0 to 3 seconds) before sending each Fibonacci number
-        int fib_delay = rand() % 3;
-        sleep(fib_delay);
-
-        // Send the next Fibonacci number to the parent
-        write(client_fd, &next, sizeof(next));
-    }
-
-    // Close the client connection
-    close(client_fd);
-}
-
-// Function to send the value of n and print Fibonacci sequence received from the child
-void parent_send_n_and_print_fibonacci(int n, int sock_fd) {
-    long long value;
-
-    // Send the value of n to the child
-    write(sock_fd, &n, sizeof(n));
-
-    // Receive Fibonacci numbers from the child and print them
-    for (int i = 0; i < n; ++i) {
-        read(sock_fd, &value, sizeof(value));
-        printf("%lld ", value);
-        fflush(stdout);
-    }
-    printf("\n");
-}
-
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     if (argc < 2) {
         printf("Usage: %s <n>\n", argv[0]);
         exit(EXIT_FAILURE);
@@ -90,7 +25,7 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    srand(time(NULL));  // Seed for random delay
+    srand(time(NULL)); // Seed for random delay
 
     // Create a socket
     int server_fd, client_fd;
@@ -110,7 +45,7 @@ int main(int argc, char* argv[]) {
     server_addr.sin_port = htons(PORT);
 
     // Bind the server to the specified port
-    if (bind(server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+    if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
         perror("bind");
         exit(EXIT_FAILURE);
     }
@@ -122,11 +57,57 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    if (pid == 0) {  // Child process (server)
-        generate_fibonacci(server_fd);
+    if (pid == 0) { // Child process (server)
+        struct sockaddr_in client_addr;
+        socklen_t client_len = sizeof(client_addr);
+        int client_fd;
+        int n;
+        long long a = 0, b = 1, next;
+
+        // Random wait before starting the server (1 to 3 seconds)
+        int delay = (rand() % 3) + 1;
+        sleep(delay);
+
+        // Start listening for connections
+        listen(server_fd, 1);
+
+        // Accept connection from the client
+        client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_len);
+        if (client_fd < 0) {
+            perror("accept");
+            exit(EXIT_FAILURE);
+        }
+
+        // Read the value of n sent by the parent
+        read(client_fd, &n, sizeof(n));
+
+        // Generate Fibonacci sequence and send it to the parent
+        for (int i = 0; i < n; ++i) {
+            if (i == 0)
+                next = a;
+            else if (i == 1)
+                next = b;
+            else {
+                next = a + b;
+                a = b;
+                b = next;
+            }
+
+            // Random delay (0 to 3 seconds) before sending each Fibonacci number
+            int fib_delay = rand() % 3;
+            sleep(fib_delay);
+
+            // Send the next Fibonacci number to the parent
+            write(client_fd, &next, sizeof(next));
+        }
+
+        // Close the client connection
+        close(client_fd);
+
         close(server_fd);
         exit(EXIT_SUCCESS);
-    } else {  // Parent process (client)
+    }
+    else { // Parent process (client)
         // Create a client socket
         client_fd = socket(AF_INET, SOCK_STREAM, 0);
         if (client_fd < 0) {
@@ -141,16 +122,27 @@ int main(int argc, char* argv[]) {
 
         // Try to connect repeatedly to the server
         int attempt = 0;
-        while (connect(client_fd, (struct sockaddr*)&client_addr, sizeof(client_addr)) < 0) {
+        while (connect(client_fd, (struct sockaddr *)&client_addr, sizeof(client_addr)) < 0) {
             if (++attempt >= MAX_ATTEMPTS) {
                 perror("connect");
                 exit(EXIT_FAILURE);
             }
-            usleep(100000);  // Wait 100 ms before the next attempt
+            usleep(100000); // Wait 100 ms before the next attempt
         }
 
         // Send the value of n and print the Fibonacci sequence received from the child
-        parent_send_n_and_print_fibonacci(n, client_fd);
+        long long value;
+
+        // Send the value of n to the child
+        write(client_fd, &n, sizeof(n));
+
+        // Receive Fibonacci numbers from the child and print them
+        for (int i = 0; i < n; ++i) {
+            read(client_fd, &value, sizeof(value));
+            printf("%lld ", value);
+            fflush(stdout);
+        }
+        printf("\n");
 
         // Close the client socket
         close(client_fd);
