@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
         struct sockaddr_in client_addr;
         socklen_t client_len = sizeof(client_addr);
         int client_fd;
-        int n;
+        int child_n;
         long long a = 0, b = 1, next;
 
         // Random wait before starting the server (1 to 3 seconds)
@@ -79,10 +79,10 @@ int main(int argc, char *argv[]) {
         }
 
         // Read the value of n sent by the parent
-        read(client_fd, &n, sizeof(n));
+        read(client_fd, &child_n, sizeof(n));
 
         // Generate Fibonacci sequence and send it to the parent
-        for (int i = 0; i < n; ++i) {
+        for (int i = 0; i < child_n; i++) {
             if (i == 0)
                 next = a;
             else if (i == 1)
@@ -101,10 +101,10 @@ int main(int argc, char *argv[]) {
             write(client_fd, &next, sizeof(next));
         }
 
-        // Close the client connection
+        // Close the client and server connections
         close(client_fd);
-
         close(server_fd);
+
         exit(EXIT_SUCCESS);
     }
     else { // Parent process (client)
@@ -123,7 +123,8 @@ int main(int argc, char *argv[]) {
         // Try to connect repeatedly to the server
         int attempt = 0;
         while (connect(client_fd, (struct sockaddr *)&client_addr, sizeof(client_addr)) < 0) {
-            if (++attempt >= MAX_ATTEMPTS) {
+            attempt++;
+            if (attempt >= MAX_ATTEMPTS) {
                 perror("connect");
                 exit(EXIT_FAILURE);
             }
@@ -137,7 +138,7 @@ int main(int argc, char *argv[]) {
         write(client_fd, &n, sizeof(n));
 
         // Receive Fibonacci numbers from the child and print them
-        for (int i = 0; i < n; ++i) {
+        for (int i = 0; i < n; i++) {
             read(client_fd, &value, sizeof(value));
             printf("%lld ", value);
             fflush(stdout);
