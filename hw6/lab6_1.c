@@ -61,7 +61,6 @@ int main(int argc, char *argv[]) {
         struct sockaddr_in client_addr;
         socklen_t client_len = sizeof(client_addr);
         int client_fd;
-        int child_n;
         long long a = 0, b = 1, next;
 
         // Random wait before starting the server (1 to 3 seconds)
@@ -78,11 +77,9 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
 
-        // Read the value of n sent by the parent
-        read(client_fd, &child_n, sizeof(n));
-
         // Generate Fibonacci sequence and send it to the parent
-        for (int i = 0; i < child_n; i++) {
+        // n copied from forking parent process
+        for (int i = 0; i < n; i++) {
             if (i == 0)
                 next = a;
             else if (i == 1)
@@ -93,7 +90,7 @@ int main(int argc, char *argv[]) {
                 b = next;
             }
 
-            // Random delay (0 to 3 seconds) before sending each Fibonacci number
+            // Random delay (0 to 2 seconds) before sending each Fibonacci number
             int fib_delay = rand() % 3;
             sleep(fib_delay);
 
@@ -101,10 +98,9 @@ int main(int argc, char *argv[]) {
             write(client_fd, &next, sizeof(next));
         }
 
-        // Close the client and server connections
+        // Close the client, server connections and exit process
         close(client_fd);
         close(server_fd);
-
         exit(EXIT_SUCCESS);
     }
     else { // Parent process (client)
@@ -118,6 +114,7 @@ int main(int argc, char *argv[]) {
         // Setup client address (same as server)
         client_addr.sin_family = AF_INET;
         client_addr.sin_port = htons(PORT);
+        // use loopback as the client address
         client_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
         // Try to connect repeatedly to the server
