@@ -4,8 +4,8 @@
 #include <linux/fs.h>       
 #include <linux/miscdevice.h>
 #include <linux/sched.h>     
-#include <linux/cred.h>      
-
+#include <linux/cred.h>
+     
 #define DEVICE_NAME "lab8"   
 
 static uid_t saved_uid;      // store the UID of the process that opens the device
@@ -29,6 +29,7 @@ static int misc_open(struct inode *inode, struct file *file)
 // Read function for the misc device
 static ssize_t misc_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
 {
+    // count is our buffer size from the user space
     char uid_str[16];    // Buffer to store the UID as a string (16 is the max length)
     int len;             // Length of the UID string
 

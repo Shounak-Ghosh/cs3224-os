@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    char buffer[100];
+    char buffer[100] = {0};
     int bytes_read = 0;
     int length = atoi(argv[1]);
     int fd = open("/dev/lab8", O_RDONLY);

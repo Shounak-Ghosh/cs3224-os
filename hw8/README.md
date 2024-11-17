@@ -8,6 +8,6 @@ Load the module using `sudo insmod lab8_a.ko`.
 
 Check if the device file was created: `ls /dev/lab8`.
 
-Compile and run the test program using `gcc test.c -o test` and `sudo ./test`.
+Compile and run the test program using `gcc test2.c -o test2` and `sudo ./test2 <BUFFER_SIZE>`.
 
 Unload the module using `sudo rmmod lab8_a`.
