@@ -7,26 +7,47 @@
 #include <sys/types.h>
 
 #define DEVICE_PATH "/dev/lab8"
-#define BUFFER_SIZE 256
 
-int main() {
+int main(int argc, char *argv[]) {
     int fd;
-    char buffer[BUFFER_SIZE];
+    char *buffer;
     ssize_t bytes_read;
+
+    // Check if buffer size is provided as a command-line argument
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <BUFFER_SIZE>\n", argv[0]);
+        return 1;
+    }
+
+    // Parse the buffer size from the command-line argument
+    int buffer_size = atoi(argv[1]);
+    if (buffer_size <= 0) {
+        fprintf(stderr, "Invalid BUFFER_SIZE: %d\n", buffer_size);
+        return 1;
+    }
+
+    // Dynamically allocate memory for the buffer
+    buffer = malloc(buffer_size);
+    if (!buffer) {
+        perror("Failed to allocate memory for buffer");
+        return 1;
+    }
 
     // Open the device
     fd = open(DEVICE_PATH, O_RDONLY);
     if (fd < 0) {
         perror("Failed to open device");
+        free(buffer); // Free allocated memory
         return 1;
     }
     printf("Successfully opened device: %s\n", DEVICE_PATH);
 
     // Read from the device
-    bytes_read = read(fd, buffer, BUFFER_SIZE - 1);
+    bytes_read = read(fd, buffer, buffer_size); // buffer_size -1, Leave space for null terminator?
     if (bytes_read < 0) {
         perror("Failed to read from device");
         close(fd);
+        free(buffer); // Free allocated memory
         return 1;
     }
 
@@ -50,6 +71,7 @@ int main() {
 
     // Close the device
     close(fd);
+    free(buffer); // Free allocated memory
     printf("Closed device\n");
 
     return 0;
