@@ -33,6 +33,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Error: n must be greater than 1.\n");
         exit(EXIT_FAILURE);
     }
+    printf("Consumer: Address of n: %p\n", (void*)&n);
 
     int shm_fd = shm_open(SHM_NAME, O_RDWR, 0666);
     if (shm_fd == -1) {
@@ -45,6 +46,8 @@ int main(int argc, char *argv[]) {
         perror("mmap");
         exit(EXIT_FAILURE);
     }
+
+    printf("Consumer: Shared buffer start address: %p\n", (void*)shared_data);
 
     sem_t *sem_empty = sem_open(SEM_EMPTY, 0);
     sem_t *sem_full = sem_open(SEM_FULL, 0);

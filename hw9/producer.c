@@ -41,6 +41,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Error: n must be greater than 1.\n");
         exit(EXIT_FAILURE);
     }
+    printf("Producer: Address of n: %p\n", (void*)&n);
 
     int shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
     if (shm_fd == -1) {
@@ -58,6 +59,7 @@ int main(int argc, char *argv[]) {
         perror("mmap");
         exit(EXIT_FAILURE);
     }
+    printf("Producer: Shared buffer start address: %p\n", (void*)shared_data);
 
     shared_data->in = 0;
     shared_data->out = 0;
