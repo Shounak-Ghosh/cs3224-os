@@ -22,14 +22,6 @@ typedef struct {
     int out;
 } shared_data_t;
 
-void generate_fibonacci(long long *fib_seq, long long length) {
-    fib_seq[0] = 0;
-    if (length > 1) fib_seq[1] = 1;
-    for (long long i = 2; i < length; i++) {
-        fib_seq[i] = fib_seq[i - 1] + fib_seq[i - 2];
-    }
-}
-
 int main(int argc, char *argv[]) {
     if (argc != 2) {
         fprintf(stderr, "Usage: %s <n>\n", argv[0]);
@@ -73,12 +65,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    long long *fib_seq = malloc(n * sizeof(long long));
-    if (!fib_seq) {
-        perror("malloc");
-        exit(EXIT_FAILURE);
-    }
-    generate_fibonacci(fib_seq, n);
+    long long prev1 = 0, prev2 = 1, current;
 
     struct timeval tv;
     struct tm *timeinfo;
@@ -86,8 +73,20 @@ int main(int argc, char *argv[]) {
 
     for (long long i = 0; i < n; i++) {
         sleep(rand() % 3);
+
         sem_wait(sem_empty);
         sem_wait(sem_mutex);
+
+        // Generate the next Fibonacci number
+        if (i == 0) {
+            current = prev1;
+        } else if (i == 1) {
+            current = prev2;
+        } else {
+            current = prev1 + prev2;
+            prev1 = prev2;
+            prev2 = current;
+        }
 
         // Get the current time
         gettimeofday(&tv, NULL);
@@ -96,15 +95,14 @@ int main(int argc, char *argv[]) {
         // Format the time up to seconds
         strftime(time_str, sizeof(time_str), "%S", timeinfo);
 
-        shared_data->buffer[shared_data->in] = fib_seq[i];
-        printf("(%s.%06ld) Produced Fibonacci[%lld]: %lld\n", time_str, tv.tv_usec, i, fib_seq[i]);
+        shared_data->buffer[shared_data->in] = current;
+        printf("(%s.%06ld) Produced Fibonacci[%lld]: %lld\n", time_str, tv.tv_usec, i, current);
         shared_data->in = (shared_data->in + 1) % BUF_SZ;
 
         sem_post(sem_mutex);
         sem_post(sem_full);
     }
 
-    free(fib_seq);
     munmap(shared_data, sizeof(shared_data_t));
     close(shm_fd);
 
