@@ -47,7 +47,7 @@ def simulate(page_trace, f, p):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Usage: python second_chance.py <n> <p>")
+        print(f"Usage: {sys.argv[0]} <n> <p>")
         sys.exit(1)
     
     n = int(sys.argv[1])
@@ -59,3 +59,13 @@ if __name__ == "__main__":
 
     page_trace = page_trace_generator(n, p)
     print("Generated Page Trace:", page_trace)
+    # Simulate for f values from 4 to p and record results
+    results = {}
+    for f in range(4, p + 1):
+        num_page_faults = simulate(page_trace, f, p)
+        results[f] = num_page_faults
+
+    # Print results
+    print("Number of Page Faults for each frame size:")
+    for f, faults in results.items():
+        print(f"Frames: {f}, Page Faults: {faults}")

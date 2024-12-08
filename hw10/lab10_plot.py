@@ -24,9 +24,17 @@ def main():
     plt.xlabel('Number of Frames')
     plt.ylabel('Number of Page Faults')
     plt.grid(True)
-    # plt.savefig('page_faults_vs_frames.png')
-    plt.show()
 
+    # Add origin and axes
+    plt.axhline(0, color='black', linewidth=0.8)  # X-axis
+    plt.axvline(0, color='black', linewidth=0.8)  # Y-axis
+
+    # Extend x and y limits to include origin
+    plt.xlim(0, f_max + 1)
+    plt.ylim(0, max(page_faults) + 1)
+
+    # Display plot
+    plt.show()
 
 if __name__ == "__main__":
     main()
